@@ -95,6 +95,29 @@ app.post("/api/urls", async (req, res) => {
   }
 });
 
+app.get("/api/urls", async (req, res) => {
+  try {
+    const urls = await Url.find()
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+
+    res.json(urls);
+  } catch (error) {
+    console.error("Fetch URLs error:", error.message);
+    res.status(500).json({ message: "Could not load saved links." });
+  }
+});
+
+app.delete("/api/urls", async (req, res) => {
+  try {
+    await Url.deleteMany({});
+    res.json({ message: "Link history cleared successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Could not clear link history." });
+  }
+});
+
 // Retrieve saved links for the dashboard.
 app.get("/:code", async (req, res) => {
   try {
@@ -102,12 +125,13 @@ app.get("/:code", async (req, res) => {
       { shortCode: req.params.code },
       { $inc: { clicks: 1 } },
       { new: true }
+
     );
 
     if (!url) {
       return res.status(404).send("Short link not found");
     }
-
+    console.log("CLICK COUNT:", url.shortCode, url.clicks);
     res.redirect(url.originalUrl);
   } catch (error) {
     res.status(500).send("Redirect failed");

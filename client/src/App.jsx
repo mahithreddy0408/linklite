@@ -10,6 +10,28 @@ function App() {
   const [error, setError] = useState("");
   const [copiedCode, setCopiedCode] = useState("");
 
+  async function clearHistory() {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete all link history?"
+  );
+
+  if (!confirmed) return;
+
+  try {
+    const response = await fetch("/api/urls", {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Could not clear history.");
+    }
+
+    setUrls([]);
+  } catch (error) {
+    setError(error.message);
+  }
+}
+
   async function loadUrls() {
     setFetching(true);
 
@@ -23,15 +45,40 @@ function App() {
       const data = await response.json();
       setUrls(data);
     } catch {
-      setError("Could not load links. Check your backend connection.");
+      setError("Could not load links");
     } finally {
       setFetching(false);
     }
   }
 
+  const refreshClickCounts = async () => {
+  try {
+    const response = await fetch("/api/urls");
+    if (!response.ok) return;
+
+    const data = await response.json();
+    setUrls(data);
+  } catch (error) {
+    console.error("Failed to refresh click counts:", error);
+  }
+};
+
+
   useEffect(() => {
     loadUrls();
   }, []);
+
+    useEffect(() => {
+  const handleFocus = () => {
+    loadUrls();
+  };
+
+  window.addEventListener("focus", handleFocus);
+
+  return () => {
+    window.removeEventListener("focus", handleFocus);
+  };
+}, []);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -119,7 +166,7 @@ function App() {
             {loading ? "Shortening..." : "Shorten URL"}
           </button>
         </form>
-
+            
         {error && <p className="error-message">{error}</p>}
 
         <p className="hint">
@@ -135,7 +182,9 @@ function App() {
           </div>
           <span className="link-count">{urls.length} links shown</span>
         </div>
-
+<button onClick={clearHistory}>
+                Clear All History
+                  </button>
         {fetching ? (
           <div className="empty-state">Loading your links...</div>
         ) : urls.length === 0 ? (

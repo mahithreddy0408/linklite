@@ -108,7 +108,7 @@ h1 {
   background: white;
   border: 1px solid #e4e6ef;
   border-radius: 16px;
-  box-shadow: 0 12px 35px #202b3c0b;
+  box-shadow: 0 12px 35px #9aa5b50b;
 }
 
 .shorten-form input {
@@ -297,6 +297,7 @@ footer {
   border: 0;
 }
 
+
 @media (max-width: 600px) {
   .page {
     padding: 0 18px;
@@ -354,4 +355,5 @@ footer {
   footer {
     flex-direction: column;
   }
+
 }
